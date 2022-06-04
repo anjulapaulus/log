@@ -4,8 +4,6 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-type TimeEncoder zapcore.TimeEncoder
-
 var (
 	EpochTimeEncoder       = zapcore.EpochTimeEncoder
 	EpochMillisTimeEncoder = zapcore.EpochMillisTimeEncoder

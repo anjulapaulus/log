@@ -17,8 +17,6 @@ const (
 	FATAL  Level = zap.FatalLevel
 )
 
-type LevelEncoder zapcore.LevelEncoder
-
 // Level encoders to serialize levels
 var (
 	LowercaseLevelEncoder      = zapcore.LowercaseLevelEncoder

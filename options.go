@@ -3,6 +3,9 @@ package log
 import (
 	"io"
 	"os"
+	"time"
+
+	"go.uber.org/zap/zapcore"
 )
 
 type OUTPUT_FORMAT string
@@ -22,8 +25,8 @@ type logOptions struct {
 	skipFrameCount int
 	writer         io.Writer
 	output         OUTPUT_FORMAT
-	timeEncoder    TimeEncoder
-	levelEncoder   LevelEncoder
+	timeEncoder    func(time.Time, zapcore.PrimitiveArrayEncoder)
+	levelEncoder   func(Level, zapcore.PrimitiveArrayEncoder)
 }
 
 type Option func(*logOptions)
@@ -44,7 +47,7 @@ func (lOpts *logOptions) setDefault() {
 	lOpts.funcPath = false
 	lOpts.writer = os.Stdout
 	lOpts.output = TextFormat
-	lOpts.timeEncoder = TimeEncoder(TimeEncoderOfLayout("2006-01-02 15:04:05"))
+	lOpts.timeEncoder = TimeEncoderOfLayout("2006-01-02 15:04:05")
 	lOpts.levelEncoder = CapitalLevelEncoder
 }
 
@@ -86,13 +89,13 @@ func WithLogLevel(lvl Level) Option {
 	}
 }
 
-func WithLevelEncoder(enc LevelEncoder) Option {
+func WithLevelEncoder(enc func(Level, zapcore.PrimitiveArrayEncoder)) Option {
 	return func(opts *logOptions) {
 		opts.levelEncoder = enc
 	}
 }
 
-func WithTimeEncoder(enc TimeEncoder) Option {
+func WithTimeEncoder(enc func(time.Time, zapcore.PrimitiveArrayEncoder)) Option {
 	return func(opts *logOptions) {
 		opts.timeEncoder = enc
 	}

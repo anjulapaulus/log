@@ -86,8 +86,8 @@ func NewLog(opt ...Option) *logger {
 
 	zapOptions = append(zapOptions, zap.AddStacktrace(PANIC))
 
-	config.EncodeLevel = zapcore.LevelEncoder(opts.levelEncoder)
-	config.EncodeTime = zapcore.TimeEncoder(opts.timeEncoder)
+	config.EncodeLevel = opts.levelEncoder
+	config.EncodeTime = opts.timeEncoder
 
 	// fileEncoder := zapcore.NewConsoleEncoder(config)
 	// consoleEncoder := zapcore.NewConsoleEncoder(config)
