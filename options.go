@@ -45,10 +45,10 @@ func (lOpts *logOptions) setDefault() {
 	lOpts.logLevel = ERROR
 	lOpts.filePath = false
 	lOpts.funcPath = false
-	lOpts.writer = os.Stdout
+	lOpts.writer = os.Stderr
 	lOpts.output = TextFormat
-	lOpts.timeEncoder = TimeEncoderOfLayout("2006-01-02 15:04:05")
-	lOpts.levelEncoder = CapitalLevelEncoder
+	lOpts.timeEncoder = zapcore.TimeEncoderOfLayout("2006-01-02 15:04:05")
+	lOpts.levelEncoder = zapcore.CapitalColorLevelEncoder
 }
 
 // copy returns a copy of existing configuration values of the logger.

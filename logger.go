@@ -68,7 +68,7 @@ func NewLog(opt ...Option) *logger {
 	}
 
 	if opts.filePath {
-		config.FunctionKey = "Caller"
+		config.CallerKey = "Caller"
 		zapOptions = append(zapOptions, zap.AddCaller())
 	}
 
@@ -96,7 +96,7 @@ func NewLog(opt ...Option) *logger {
 
 	core := zapcore.NewTee(
 		// zapcore.NewCore(fileEncoder, writer, defaultLogLevel),
-		zapcore.NewCore(outputEncoder, zapcore.AddSync(os.Stdout), opts.logLevel),
+		zapcore.NewCore(outputEncoder, zapcore.AddSync(os.Stderr), opts.logLevel),
 	)
 
 	// core := zapcore.NewCore(outputEncoder, zapcore.AddSync(os.Stdout), opts.logLevel)
