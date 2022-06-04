@@ -94,12 +94,12 @@ func NewLog(opt ...Option) *logger {
 	// logFile, _ := os.OpenFile("text.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	// writer := zapcore.AddSync(logFile)
 
-	// core := zapcore.NewTee(
-	// 	// zapcore.NewCore(fileEncoder, writer, defaultLogLevel),
-	// 	zapcore.NewCore(outputEncoder, zapcore.AddSync(os.Stdout), opts.logLevel),
-	// )
+	core := zapcore.NewTee(
+		// zapcore.NewCore(fileEncoder, writer, defaultLogLevel),
+		zapcore.NewCore(outputEncoder, zapcore.AddSync(os.Stdout), opts.logLevel),
+	)
 
-	core := zapcore.NewCore(outputEncoder, zapcore.AddSync(os.Stdout), opts.logLevel)
+	// core := zapcore.NewCore(outputEncoder, zapcore.AddSync(os.Stdout), opts.logLevel)
 	log := zap.New(core, zapOptions...)
 	return &logger{
 		log: log,
