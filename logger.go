@@ -58,6 +58,7 @@ func NewLog(opt ...Option) *logger {
 	config := zap.NewProductionEncoderConfig()
 
 	var zapOptions []zap.Option
+	var outputEncoder zapcore.Encoder
 
 	switch {
 	case opts.funcPath:
@@ -71,20 +72,30 @@ func NewLog(opt ...Option) *logger {
 		zapOptions = append(zapOptions, zap.AddCallerSkip(opts.skipFrameCount))
 	}
 
+	switch opts.output {
+	case JSONFormat:
+		outputEncoder = zapcore.NewJSONEncoder(config)
+
+	case TextFormat:
+		outputEncoder = zapcore.NewConsoleEncoder(config)
+	}
+
 	zapOptions = append(zapOptions, zap.AddStacktrace(PANIC))
 
 	config.EncodeLevel = zapcore.LevelEncoder(opts.levelEncoder)
 	config.EncodeTime = zapcore.TimeEncoder(opts.timeEncoder)
 
 	// fileEncoder := zapcore.NewConsoleEncoder(config)
-	consoleEncoder := zapcore.NewConsoleEncoder(config)
+	// consoleEncoder := zapcore.NewConsoleEncoder(config)
 	// logFile, _ := os.OpenFile("text.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	// writer := zapcore.AddSync(logFile)
 
-	core := zapcore.NewTee(
-		// zapcore.NewCore(fileEncoder, writer, defaultLogLevel),
-		zapcore.NewCore(consoleEncoder, zapcore.AddSync(os.Stdout), opts.logLevel),
-	)
+	// core := zapcore.NewTee(
+	// 	// zapcore.NewCore(fileEncoder, writer, defaultLogLevel),
+	// 	zapcore.NewCore(outputEncoder, zapcore.AddSync(os.Stdout), opts.logLevel),
+	// )
+
+	core := zapcore.NewCore(outputEncoder, zapcore.AddSync(os.Stdout), opts.logLevel)
 	log := zap.New(core, zapOptions...)
 	return &logger{
 		log: log,
