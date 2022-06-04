@@ -76,6 +76,9 @@ func NewLog(opt ...Option) *logger {
 		zapOptions = append(zapOptions, zap.AddCallerSkip(opts.skipFrameCount))
 	}
 
+	config.EncodeLevel = opts.levelEncoder
+	config.EncodeTime = opts.timeEncoder
+
 	switch opts.output {
 	case JSONFormat:
 		outputEncoder = zapcore.NewJSONEncoder(config)
@@ -85,9 +88,6 @@ func NewLog(opt ...Option) *logger {
 	}
 
 	zapOptions = append(zapOptions, zap.AddStacktrace(PANIC))
-
-	config.EncodeLevel = zapcore.CapitalColorLevelEncoder
-	config.EncodeTime = zapcore.TimeEncoderOfLayout("2006-01-02 15:04:05")
 
 	// fileEncoder := zapcore.NewConsoleEncoder(config)
 	// consoleEncoder := zapcore.NewConsoleEncoder(config)
