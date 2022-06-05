@@ -1,6 +1,7 @@
 package log
 
 import (
+	"context"
 	"io"
 	"os"
 	"time"
@@ -17,16 +18,17 @@ const (
 
 // logOptions contains all the configuration options for the logger.
 type logOptions struct {
-	name           string
-	colors         bool
-	logLevel       Level
-	filePath       bool
-	funcPath       bool
-	skipFrameCount int
-	writer         io.Writer
-	output         OUTPUT_FORMAT
-	timeEncoder    func(time.Time, zapcore.PrimitiveArrayEncoder)
-	levelEncoder   func(Level, zapcore.PrimitiveArrayEncoder)
+	name              string
+	colors            bool
+	logLevel          Level
+	filePath          bool
+	funcPath          bool
+	skipFrameCount    int
+	writer            io.Writer
+	output            OUTPUT_FORMAT
+	timeEncoder       func(time.Time, zapcore.PrimitiveArrayEncoder)
+	levelEncoder      func(Level, zapcore.PrimitiveArrayEncoder)
+	ctxTraceExtractor func(ctx context.Context) string
 }
 
 type Option func(*logOptions)
@@ -40,7 +42,7 @@ func (lOpts *logOptions) apply(options ...Option) {
 
 // setDefault applies default values configurations for the logger
 func (lOpts *logOptions) setDefault() {
-	lOpts.skipFrameCount = 2
+	lOpts.skipFrameCount = 1
 	lOpts.colors = true
 	lOpts.logLevel = ERROR
 	lOpts.filePath = false
@@ -54,16 +56,17 @@ func (lOpts *logOptions) setDefault() {
 // copy returns a copy of existing configuration values of the logger.
 func (lOpts *logOptions) copy() *logOptions {
 	return &logOptions{
-		name:           lOpts.name,
-		colors:         lOpts.colors,
-		logLevel:       lOpts.logLevel,
-		filePath:       lOpts.filePath,
-		funcPath:       lOpts.funcPath,
-		skipFrameCount: lOpts.skipFrameCount,
-		writer:         lOpts.writer,
-		output:         lOpts.output,
-		timeEncoder:    lOpts.timeEncoder,
-		levelEncoder:   lOpts.levelEncoder,
+		name:              lOpts.name,
+		colors:            lOpts.colors,
+		logLevel:          lOpts.logLevel,
+		filePath:          lOpts.filePath,
+		funcPath:          lOpts.funcPath,
+		skipFrameCount:    lOpts.skipFrameCount,
+		writer:            lOpts.writer,
+		output:            lOpts.output,
+		timeEncoder:       lOpts.timeEncoder,
+		levelEncoder:      lOpts.levelEncoder,
+		ctxTraceExtractor: lOpts.ctxTraceExtractor,
 	}
 }
 
@@ -133,5 +136,13 @@ func WithFilePath(enabled bool) Option {
 func WithFuncPath(enabled bool) Option {
 	return func(opts *logOptions) {
 		opts.funcPath = enabled
+	}
+}
+
+// WithCtxTraceExtractor allows setting up of a function to extract trace from the context.
+// Default value func(_ context.Context) string{return ""}
+func WithCtxTraceExtractor(fn func(ctx context.Context) string) Option {
+	return func(opts *logOptions) {
+		opts.ctxTraceExtractor = fn
 	}
 }

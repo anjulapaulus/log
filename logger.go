@@ -1,107 +1,110 @@
 package log
 
-import (
-	"fmt"
-	"os"
-
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
-)
-
-type logger struct {
-	log *zap.Logger
-}
-
-func (l *logger) Debug(message string, fields ...Field) {
-	l.log.Debug(message, fields...)
-}
-
-func (l *logger) Info(message string, fields ...Field) {
-	l.log.Info(message, fields...)
-}
-
-func (l *logger) Warn(message string, fields ...Field) {
-	l.log.Warn(message, fields...)
-}
-
-func (l *logger) Error(message string, fields ...Field) {
-	l.log.Error(message, fields...)
-}
-
-func (l *logger) Panic(message string, fields ...Field) {
-	l.log.Panic(message, fields...)
-}
-
-func (l *logger) Fatal(message string, fields ...Field) {
-	l.log.Fatal(message, fields...)
-}
-
-func (l *logger) Sync() error {
-	return l.log.Sync()
-}
-
-func (l *logger) Named(name string) *logger {
-	return &logger{
-		log: l.log.Named(name),
-	}
-}
-
-// func format(message interface{}) string {
-// 	return fmt.Sprintf("%v", message)
+// type logger struct {
+// 	log     *zap.SugaredLogger
+// 	options *logOptions
 // }
 
-// New create a new logger (not support log rotating).
-func NewLog(opt ...Option) *logger {
-	opts := logOptions{}
-	opts.setDefault()
-	opts.apply(opt...)
+// func (l *logger) Debug(args ...interface{}) {
+// 	l.log.Debug(args)
+// }
 
-	fmt.Println(opts)
+// func (l *logger) Info(message string, fields ...Field) {
+// 	l.log.Info(message, fields...)
+// }
 
-	config := zap.NewProductionEncoderConfig()
+// func (l *logger) Warn(message string, fields ...Field) {
+// 	l.log.Warn(message, fields...)
+// }
 
-	var zapOptions []zap.Option
-	var outputEncoder zapcore.Encoder
+// func (l *logger) Error(message string, fields ...Field) {
+// 	l.log.Error(message, fields...)
+// }
 
-	if opts.funcPath {
-		config.FunctionKey = "Function"
-	}
+// func (l *logger) Panic(message string, fields ...Field) {
+// 	l.log.Panic(message, fields...)
+// }
 
-	if opts.filePath {
-		config.CallerKey = "Caller"
-		zapOptions = append(zapOptions, zap.AddCaller())
-	}
+// func (l *logger) Fatal(message string, fields ...Field) {
+// 	l.log.Fatal(message, fields...)
+// }
 
-	if opts.skipFrameCount != 0 {
-		zapOptions = append(zapOptions, zap.AddCallerSkip(opts.skipFrameCount))
-	}
+// func (l *logger) Sync() error {
+// 	return l.log.Sync()
+// }
 
-	config.EncodeLevel = opts.levelEncoder
-	config.EncodeTime = opts.timeEncoder
+// func (l *logger) Named(name string) *fieldLogger {
+// 	return &fieldLogger{
+// 		log: l.log.Named(name),
+// 	}
+// }
 
-	switch opts.output {
-	case JSONFormat:
-		outputEncoder = zapcore.NewJSONEncoder(config)
+// func (l *logger) NewLog(opt ...Option) *fieldLogger {
+// 	opts := l.options.copy()
+// 	opts.apply(opt...)
+// 	return initLogger(opts)
+// }
 
-	case TextFormat:
-		outputEncoder = zapcore.NewConsoleEncoder(config)
-	}
+// // New create a new field logger
+// func NewLog(opt ...Option) *fieldLogger {
+// 	opts := &logOptions{}
+// 	opts.setDefault()
+// 	opts.apply(opt...)
+// 	return initLogger(opts)
+// }
 
-	zapOptions = append(zapOptions, zap.AddStacktrace(PANIC))
+// func initSimpleLogger(opts *logOptions) *fieldLogger {
+// 	config := zap.NewProductionEncoderConfig()
 
-	// fileEncoder := zapcore.NewConsoleEncoder(config)
-	// consoleEncoder := zapcore.NewConsoleEncoder(config)
-	// logFile, _ := os.OpenFile("text.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	// writer := zapcore.AddSync(logFile)
+// 	var zapOptions []zap.Option
+// 	var outputEncoder zapcore.Encoder
 
-	core := zapcore.NewTee(
-		// zapcore.NewCore(fileEncoder, writer, defaultLogLevel),
-		zapcore.NewCore(outputEncoder, zapcore.AddSync(os.Stderr), opts.logLevel),
-	)
+// 	if opts.funcPath {
+// 		config.FunctionKey = "Function"
+// 	}
 
-	// core := zapcore.NewCore(outputEncoder, zapcore.AddSync(os.Stdout), opts.logLevel)
-	log := zap.New(core, zapOptions...)
-	return &logger{
-		log: log,
-	}
-}
+// 	if opts.filePath {
+// 		config.CallerKey = "Caller"
+// 		zapOptions = append(zapOptions, zap.AddCaller())
+// 	}
+
+// 	if opts.skipFrameCount != 0 {
+// 		zapOptions = append(zapOptions, zap.AddCallerSkip(opts.skipFrameCount))
+// 	}
+
+// 	config.EncodeLevel = opts.levelEncoder
+// 	config.EncodeTime = opts.timeEncoder
+
+// 	switch opts.output {
+// 	case JSONFormat:
+// 		config.EncodeLevel = CapitalLevelEncoder
+// 		outputEncoder = zapcore.NewJSONEncoder(config)
+
+// 	case TextFormat:
+// 		outputEncoder = zapcore.NewConsoleEncoder(config)
+// 	}
+
+// 	zapOptions = append(zapOptions, zap.AddStacktrace(PANIC))
+
+// 	// fileEncoder := zapcore.NewConsoleEncoder(config)
+// 	// consoleEncoder := zapcore.NewConsoleEncoder(config)
+// 	// logFile, _ := os.OpenFile("text.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+// 	// writer := zapcore.AddSync(logFile)
+
+// 	core := zapcore.NewTee(
+// 		// zapcore.NewCore(fileEncoder, writer, defaultLogLevel),
+// 		zapcore.NewCore(outputEncoder, zapcore.AddSync(os.Stderr), opts.logLevel),
+// 	)
+
+// 	// core := zapcore.NewCore(outputEncoder, zapcore.AddSync(os.Stdout), opts.logLevel)
+// 	var log *zap.Logger
+// 	log = zap.New(core, zapOptions...)
+
+// 	if opts.name != "" {
+// 		log = log.Named(opts.name)
+// 	}
+// 	return &fieldLogger{
+// 		log:     log,
+// 		options: opts,
+// 	}
+// }
