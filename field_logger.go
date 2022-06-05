@@ -45,7 +45,8 @@ func (l *fieldLogger) Sync() error {
 
 func (l *fieldLogger) Named(name string) *fieldLogger {
 	return &fieldLogger{
-		log: l.log.Named(name),
+		log:     l.log.Named(name),
+		options: l.options,
 	}
 }
 
