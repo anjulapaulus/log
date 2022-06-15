@@ -2,7 +2,6 @@ package log
 
 import (
 	"context"
-	"fmt"
 	"os"
 
 	"go.uber.org/zap"
@@ -16,27 +15,27 @@ type fieldLogger struct {
 }
 
 func (l *fieldLogger) Debug(message string, fields ...Field) {
-	l.log.Debug(format(l.traceID, message), fields...)
+	l.parseFieldLogger(DEBUG, message, fields...)
 }
 
 func (l *fieldLogger) Info(message string, fields ...Field) {
-	l.log.Info(format(l.traceID, message), fields...)
+	l.parseFieldLogger(INFO, message, fields...)
 }
 
 func (l *fieldLogger) Warn(message string, fields ...Field) {
-	l.log.Warn(format(l.traceID, message), fields...)
+	l.parseFieldLogger(WARN, message, fields...)
 }
 
 func (l *fieldLogger) Error(message string, fields ...Field) {
-	l.log.Error(format(l.traceID, message), fields...)
+	l.parseFieldLogger(ERROR, message, fields...)
 }
 
 func (l *fieldLogger) Panic(message string, fields ...Field) {
-	l.log.Panic(format(l.traceID, message), fields...)
+	l.parseFieldLogger(PANIC, message, fields...)
 }
 
 func (l *fieldLogger) Fatal(message string, fields ...Field) {
-	l.log.Fatal(format(l.traceID, message), fields...)
+	l.parseFieldLogger(FATAL, message, fields...)
 }
 
 func (l *fieldLogger) Sync() error {
@@ -63,9 +62,33 @@ func (l *fieldLogger) WithContext(ctx context.Context) *fieldLogger {
 	return l
 }
 
-func format(trace, message string) string {
-	return fmt.Sprintf("%s	%s", trace, message)
+func (l *fieldLogger) parseFieldLogger(level Level, message string, fields ...Field) {
+	var f []zap.Field
+	if l.traceID != "" {
+		f = append(f, zap.String("traceID", l.traceID))
+	}
+	f = append(f, fields...)
+
+	switch level {
+	case DEBUG:
+		l.log.Debug(message, f...)
+	case INFO:
+		l.log.Info(message, f...)
+	case WARN:
+		l.log.Warn(message, f...)
+	case ERROR:
+		l.log.Error(message, f...)
+	case PANIC:
+		l.log.Panic(message, f...)
+	case FATAL:
+		l.log.Fatal(message, f...)
+
+	}
 }
+
+// func format(trace, message string) string {
+// 	return fmt.Sprintf("%s %s", trace, message)
+// }
 
 func (l *fieldLogger) NewFieldLog(opt ...Option) *fieldLogger {
 	opts := l.options.copy()
